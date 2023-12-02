@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace AdventOfCode2023.Day1Logic
+namespace AdventOfCode2023.Day1
 {
     public class Day1Logic : IPuzzles
     {
