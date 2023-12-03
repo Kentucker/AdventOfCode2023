@@ -22,6 +22,7 @@ namespace AdventOfCode2023.Day3
                 List<Position> symbolsPositionList = [];
                 var numbersRegex = new Regex(@"\b\d+\b");
                 var symbolsRegex = new Regex(@"[!$%^&*()_+|~=`{}[\]:;""'<>@#,?/-]");
+                var asterisksRegex = new Regex(@"[*]");
 
                 while ((line = streamReader.ReadLine()) != null)
                 {
@@ -49,16 +50,37 @@ namespace AdventOfCode2023.Day3
 
         public string SecondPuzzle()
         {
-            int result = 0;
+            long result = 0;
+            int schemaRow = 0;
 
             using (var fileStream = File.OpenRead(fileName))
             using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
             {
                 string? line;
+                Dictionary<Position, int> partNumbers = [];
+                List<Position> asterisksPositionList = [];
+                var numbersRegex = new Regex(@"\b\d+\b");
+                var asterisksRegex = new Regex(@"[*]");
+
                 while ((line = streamReader.ReadLine()) != null)
                 {
+                    var numbersMatches = numbersRegex.Matches(line).ToArray();
+                    var asterisksMatches = asterisksRegex.Matches(line).ToArray();
 
+                    foreach (var match in numbersMatches)
+                    {
+                        partNumbers.Add(new Position(match.Index, schemaRow), int.Parse(match.Value));
+                    }
+
+                    foreach (var match in asterisksMatches)
+                    {
+                        asterisksPositionList.Add(new Position(match.Index, schemaRow));
+                    }
+
+                    schemaRow++;
                 }
+
+                result = ChooseAndSumNumbersAroundAsterisks(partNumbers, asterisksPositionList);
             }
 
             return result.ToString();
@@ -70,7 +92,7 @@ namespace AdventOfCode2023.Day3
 
             foreach (var number in partNumbers)
             {
-                if (HasSymbolAround(number, symbolsPositionList))
+                if (HasSymbolAround(number, symbolsPositionList) is not null)
                 {
                     sum += number.Value;
                 }
@@ -79,7 +101,31 @@ namespace AdventOfCode2023.Day3
             return sum;
         }
 
-        private bool HasSymbolAround(KeyValuePair<Position,int> number, List<Position> symbolsPositionList)
+        private long ChooseAndSumNumbersAroundAsterisks(Dictionary<Position, int> partNumbers, List<Position> symbolsPositionList)
+        {
+            long sum = 0;
+            List<Gear> gearValues = [];
+
+            foreach (var number in partNumbers)
+            {
+                var position = HasSymbolAround(number, symbolsPositionList);
+
+                if (position is not null)
+                {
+                    gearValues.Add(new Gear(position, number.Value));
+                }
+            }
+
+            sum = gearValues
+                .GroupBy(g => g.Position.Value)
+                .Where(samePosition => samePosition.Skip(1).Any())
+                .Select(group => group.Select(g => g.Value).Aggregate((a, b) => a * b))
+                .Sum(sum => sum);
+
+            return sum;
+        }
+
+        private Position? HasSymbolAround(KeyValuePair<Position,int> number, List<Position> symbolsPositionList)
         {
             var xOffsets = Enumerable.Range(-1, number.Value.ToString().Length+2).ToList();
             var yOffsets = Enumerable.Range(-1, 3).ToList();
@@ -99,13 +145,13 @@ namespace AdventOfCode2023.Day3
 
                         if (symbolsPositionList.Contains(adjacentPosition))
                         {
-                            return true;
+                            return adjacentPosition;
                         }
                     }
                 }
             }
 
-            return false;
+            return null;
         }
 
         struct Position
@@ -118,6 +164,18 @@ namespace AdventOfCode2023.Day3
 
             public int X { get; set; }
             public int Y { get; set; }
+        }
+
+        struct Gear
+        {
+            public Gear(Position? position, int value)
+            {
+                Position = position;
+                Value = value;
+            }
+
+            public Position? Position { get; set; }
+            public int Value { get; set; }
         }
     }
 }
