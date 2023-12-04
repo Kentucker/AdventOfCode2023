@@ -44,11 +44,10 @@ namespace AdventOfCode2023.Day4
                 while ((line = streamReader.ReadLine()) != null)
                 {
                     var numberOfCards = scratchcardsNumber[cardNumber];
+                    var numberOfWinningNumbersInARound = NumberOfWinningNumbers(line);
 
                     for (int i = 0; i < numberOfCards; i++)
                     {
-                        var numberOfWinningNumbersInARound = NumberOfWinningNumbers(line);
-
                         for (int j = cardNumber + 1; j < cardNumber + numberOfWinningNumbersInARound + 1; j++)
                         {
                             scratchcardsNumber[j]++;
