@@ -1,6 +1,6 @@
-﻿using AdventOfCode2023.Day4;
+﻿using AdventOfCode2023.Day5;
 
-Day4Logic logic = new Day4Logic();
+Day5Logic logic = new Day5Logic();
 
 var firstResult = logic.FirstPuzzle();
 var secondResult = logic.SecondPuzzle();
