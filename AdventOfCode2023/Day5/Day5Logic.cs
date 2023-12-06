@@ -32,9 +32,9 @@ namespace AdventOfCode2023.Day5
 
             var tasksList = new List<Task<long>>();
 
-            for (int j = 0; j < almanac.Seeds.Count; j += 2)
+            for (int i = 0; i < almanac.Seeds.Count; i += 2)
             {
-                var currentPair = j;
+                var currentPair = i;
                 var task = Task.Run(() => ProcessSeedsForRange(almanac, currentPair));
                 tasksList.Add(task);
             }
