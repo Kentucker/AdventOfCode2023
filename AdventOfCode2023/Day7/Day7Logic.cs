@@ -44,31 +44,60 @@ namespace AdventOfCode2023.Day7
         public string SecondPuzzle()
         {
             long result = 0;
+            figuresSeniority = ['A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', 'J'];
 
             using (var fileStream = File.OpenRead(fileName))
             using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
             {
+                List<Hand> hands = [];
                 string? line;
+
                 while ((line = streamReader.ReadLine()) != null)
                 {
+                    var handAndBid = line.Split(' ');
+                    var hand = handAndBid[0];
+                    var bid = int.Parse(handAndBid[1]);
 
+                    var type = VerifyHandType(hand, true);
+
+                    hands.Add(new Hand(hand, bid, type));
+                }
+
+                hands = hands.OrderByDescending(hand => hand.HandType).ThenByDescending(str => str.Cards, new StringComparer()).ToList();
+
+                for (int i = 0; i < hands.Count; i++)
+                {
+                    result += (i + 1) * hands[i].Bid;
                 }
             }
 
             return result.ToString();
         }
 
-        private int VerifyHandType(string hand)
+        private int VerifyHandType(string hand, bool isJoker = false)
         {
-            var topOccurences = 0;
+            var topOccurences = hand.GroupBy(x => x).OrderByDescending(x => x.Count());
+            var topOccurenceNumber = topOccurences.First().Count();
+            var numberOfDistinctFiguresInHand = topOccurences.Count();
 
-            switch (hand.Distinct().Count())
+            if (isJoker)
+            {
+                var numberOfJokers = hand.Where(x => x == 'J').Count();
+                var handWitoutJokers = hand.Replace("J", string.Empty);
+
+                topOccurences = handWitoutJokers.GroupBy(x => x).OrderByDescending(x => x.Count());
+                topOccurenceNumber = handWitoutJokers.Any() ? topOccurences.First().Count() : 0;
+                numberOfDistinctFiguresInHand = handWitoutJokers.Any() ? topOccurences.Count() : 1;
+
+                topOccurenceNumber += numberOfJokers;
+            }
+
+            switch (numberOfDistinctFiguresInHand)
             {
                 case 1:
                     return 1;
                 case 2:
-                    topOccurences = hand.GroupBy(x => x).OrderByDescending(x => x.Count()).First().Count();
-                    if (topOccurences == 4)
+                    if (topOccurenceNumber == 4)
                     {
                         return 2;
                     }
@@ -77,8 +106,7 @@ namespace AdventOfCode2023.Day7
                         return 3;
                     }
                 case 3:
-                    topOccurences = hand.GroupBy(x => x).OrderByDescending(x => x.Count()).First().Count();
-                    if(topOccurences == 3)
+                    if (topOccurenceNumber == 3)
                     {
                         return 4;
                     }
