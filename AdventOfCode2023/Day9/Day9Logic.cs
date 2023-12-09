@@ -10,7 +10,7 @@ namespace AdventOfCode2023.Day9
 
         public string FirstPuzzle()
         {
-            int result = 0;
+            long result = 0;
 
             using (var fileStream = File.OpenRead(fileName))
             using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
@@ -33,7 +33,7 @@ namespace AdventOfCode2023.Day9
 
         public string SecondPuzzle()
         {
-            int result = 0;
+            long result = 0;
 
             using (var fileStream = File.OpenRead(fileName))
             using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
@@ -41,16 +41,22 @@ namespace AdventOfCode2023.Day9
                 string? line;
                 while ((line = streamReader.ReadLine()) != null)
                 {
+                    var values = line.Split(' ');
 
+                    var sequence = values.Select(int.Parse).ToList();
+
+                    var previousValue = CalculatePreviousValue(sequence);
+
+                    result += previousValue;
                 }
             }
 
             return result.ToString();
         }
 
-        private int CalculateNextValue(List<int> sequence)
+        private long CalculateNextValue(List<int> sequence)
         {
-            var sum = sequence.Last();
+            long sum = sequence.Last();
 
             while (sequence.Distinct().Count() != 1)
             {
@@ -66,6 +72,33 @@ namespace AdventOfCode2023.Day9
             }
 
             return sum;
+        }
+
+        private long CalculatePreviousValue(List<int> sequence)
+        {
+            List<int> firstNumbers = [ sequence.First() ];
+
+            while (sequence.Distinct().Count() != 1)
+            {
+                List<int> differences = [];
+
+                for (int i = 1; i < sequence.Count; i++)
+                {
+                    differences.Add(sequence[i] - sequence[i - 1]);
+                }
+
+                firstNumbers.Add(differences.First());
+                sequence = differences;
+            }
+
+            var firstValueInInitialRow = 0;
+
+            for (int i = firstNumbers.Count - 1; i >= 0 ; i--)
+            {
+                firstValueInInitialRow = firstNumbers[i] - firstValueInInitialRow;
+            }
+
+            return firstValueInInitialRow;
         }
     }
 }
